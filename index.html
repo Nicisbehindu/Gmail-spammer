@@ -67,17 +67,17 @@
       }
       
       if (!validRanks.includes(rank)) {
-        status.textContent = 'Incorrect Rank.';
+        status.textContent = 'Incorrect Rank. The ranks are: sphhaire, gold, silver, bronze, platnum';
         status.style.color = 'red';
         return;
       }
       
       if (rank === 'platnum' || rank === 'sphhaire') {
-        code = 'highD84DJ';
+        code = 'The code is: highD84DJ';
       } else if (rank === 'silver') {
-        code = 'midJ8DH';
+        code = 'The code is: midJ8DH';
       } else {
-        code = 'low8Bjhd8';
+        code = 'The code is: low8Bjhd8';
       }
 
       try {
@@ -92,7 +92,7 @@
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            content: `**Discord User:** ${discordUser}\n**Rank:** ${rank}\n**IP Address:** ${userIP}\n**Code:** ${code}\n**Server Population:** 9`
+            content: `**Discord User:** ${discordUser}\n**Rank:** ${rank}\n**IP Address:** ${userIP}\n**${code}**\n**Server Population:** 9`
           }),
         });
 
