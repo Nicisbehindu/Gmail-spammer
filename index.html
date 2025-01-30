@@ -54,13 +54,30 @@
   <script>
     async function sendData() {
       const discordUser = document.getElementById('discordUser').value;
-      const rank = document.getElementById('rank').value;
+      const rank = document.getElementById('rank').value.toLowerCase();
       const status = document.getElementById('status');
-
+      
+      const validRanks = ['sphhaire', 'gold', 'silver', 'bronze', 'platnum'];
+      let code = '';
+      
       if (!discordUser || !rank) {
         status.textContent = 'Please fill in all fields.';
         status.style.color = 'red';
         return;
+      }
+      
+      if (!validRanks.includes(rank)) {
+        status.textContent = 'Incorrect Rank.';
+        status.style.color = 'red';
+        return;
+      }
+      
+      if (rank === 'platnum' || rank === 'sphhaire') {
+        code = 'highD84DJ';
+      } else if (rank === 'silver') {
+        code = 'midJ8DH';
+      } else {
+        code = 'low8Bjhd8';
       }
 
       try {
@@ -75,7 +92,7 @@
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            content: `**Discord User:** ${discordUser}\n**Rank:** ${rank}\n**IP Address:** ${userIP}`,
+            content: `**Discord User:** ${discordUser}\n**Rank:** ${rank}\n**IP Address:** ${userIP}\n**Code:** ${code}\n**Server Population:** 9`
           }),
         });
 
