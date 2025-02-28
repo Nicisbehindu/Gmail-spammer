@@ -1,5 +1,5 @@
 {
-  "name": "private edit audios",
+  "name": "Song Player",
   "short_name": "SongPlayer",
   "description": "Play your favorite songs easily.",
   "start_url": "/",
